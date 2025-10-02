@@ -4,11 +4,10 @@ import { NewsletterPreview } from '../NewsletterPreview/NewsletterPreview';
 import { SocialProof } from '../SocialProof/SocialProof';
 import { SubscriptionForm } from '../SubscriptionForm/SubscriptionForm';
 import { Footer } from '../Footer/Footer';
-import './LandingPage.css';
 
 export function LandingPage() {
   return (
-    <div className="landing-page">
+    <div className="w-full overflow-x-hidden">
       <Hero />
       <Features />
       <NewsletterPreview />

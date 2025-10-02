@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import './Features.css';
 
 const features = [
   {
@@ -62,32 +61,38 @@ export function Features() {
   }, []);
 
   return (
-    <section className="features section" ref={sectionRef}>
-      <div className="container">
-        <div className="features-header scroll-reveal">
-          <h2 className="heading-lg">
+    <section className="py-24 bg-gradient-to-b from-slate-900 to-slate-800 relative" ref={sectionRef}>
+      <div className="max-w-7xl mx-auto px-8">
+        <div className="text-center max-w-3xl mx-auto mb-24 scroll-reveal">
+          <h2 className="font-heading text-[clamp(2rem,4vw,3.5rem)] font-bold leading-tight tracking-tight mb-6">
             Everything You Need to <span className="gradient-text">Stay Informed</span>
           </h2>
-          <p className="body-lg text-secondary">
+          <p className="text-[clamp(1.125rem,1.5vw,1.25rem)] text-slate-300">
             Powerful features designed to keep you ahead of the curve
           </p>
         </div>
-        
-        <div className="features-grid">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative">
           {features.map((feature, index) => (
-            <div 
-              key={index} 
-              className="feature-card scroll-reveal"
+            <div
+              key={index}
+              className="bg-slate-800/40 backdrop-blur-xl border border-violet-600/20 rounded-2xl p-12 relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-violet-600 hover:shadow-[0_0_40px_rgba(139,92,246,0.4)] scroll-reveal lg:first:col-span-2 lg:[&:nth-child(4)]:col-span-2"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div className="feature-icon-wrapper" style={{ background: `${feature.color}20` }}>
-                <span className="feature-icon" style={{ color: feature.color }}>
+              <div
+                className="w-16 h-16 rounded-xl flex items-center justify-center mb-6"
+                style={{ background: `${feature.color}20` }}
+              >
+                <span className="text-4xl" style={{ color: feature.color }}>
                   {feature.icon}
                 </span>
               </div>
-              <h3 className="heading-sm">{feature.title}</h3>
-              <p className="body-md text-secondary">{feature.description}</p>
-              <div className="feature-glow" style={{ background: `radial-gradient(circle, ${feature.color}40 0%, transparent 70%)` }}></div>
+              <h3 className="font-heading text-[clamp(1.25rem,2vw,1.75rem)] font-semibold mb-4">{feature.title}</h3>
+              <p className="text-base text-slate-300 leading-relaxed">{feature.description}</p>
+              <div
+                className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] opacity-0 transition-opacity duration-500 pointer-events-none hover:opacity-30"
+                style={{ background: `radial-gradient(circle, ${feature.color}40 0%, transparent 70%)` }}
+              ></div>
             </div>
           ))}
         </div>
