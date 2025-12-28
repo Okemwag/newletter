@@ -1,0 +1,32 @@
+{
+  "name": "Pulse Newsletter Platform",
+  "short_name": "Pulse",
+  "description": "The modern newsletter platform built for Africa. Accept payments via Paystack & M-Pesa, grow with viral referrals, and write faster with AI.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a1f",
+  "theme_color": "#1a1a1f",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-light-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["business", "productivity", "marketing"],
+  "screenshots": [
+    {
+      "src": "/dashboard-preview.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Pulse Dashboard"
+    }
+  ]
+}

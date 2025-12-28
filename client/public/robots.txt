@@ -1,0 +1,13 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Disallow admin and private areas
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /billing
+Disallow: /api/
+Disallow: /admin
+
+# Sitemap location
+Sitemap: https://pulse.app/sitemap.xml

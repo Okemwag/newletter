@@ -2,10 +2,15 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Icon } from "@iconify/react"
 import { pricingPlans } from "@/lib/pricing"
+import { OrganizationSchema, FAQSchema, ProductSchema } from "@/components/seo/structured-data"
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <>
+      <OrganizationSchema />
+      <FAQSchema />
+      <ProductSchema />
+      <div className="min-h-screen bg-background text-foreground">
       {/* Scanline overlay */}
       <div className="pointer-events-none fixed inset-0 z-50 bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(0,255,170,0.03)_2px,rgba(0,255,170,0.03)_4px)]" />
 
@@ -140,15 +145,15 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section - Text Only */}
-      <section className="relative overflow-hidden px-6 pt-28 pb-20 lg:pt-40 lg:pb-28">
+      <section className="relative overflow-hidden px-6 pt-28 pb-20 lg:pt-40 lg:pb-28" aria-label="Hero">
         {/* Background glow effects */}
-        <div className="absolute top-20 left-1/4 h-96 w-96 rounded-full bg-cyan-500/20 blur-3xl" />
-        <div className="absolute bottom-20 right-1/4 h-96 w-96 rounded-full bg-purple-500/15 blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-pink-500/10 blur-3xl" />
+        <div className="absolute top-20 left-1/4 h-96 w-96 rounded-full bg-cyan-500/20 blur-3xl" aria-hidden="true" />
+        <div className="absolute bottom-20 right-1/4 h-96 w-96 rounded-full bg-purple-500/15 blur-3xl" aria-hidden="true" />
+        <div className="absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-pink-500/10 blur-3xl" aria-hidden="true" />
 
         <div className="relative z-10 mx-auto max-w-5xl text-center">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-4 py-1.5">
-            <Icon icon="lucide:sparkles" className="h-4 w-4 text-cyan-400" />
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-4 py-1.5" role="status">
+            <Icon icon="lucide:sparkles" className="h-4 w-4 text-cyan-400" aria-hidden="true" />
             <span className="text-sm text-cyan-400">Join 10,000+ creators already growing</span>
           </div>
 
@@ -164,24 +169,24 @@ export default function HomePage() {
           </p>
 
           {/* Pain points in a row */}
-          <div className="mb-10 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Icon icon="lucide:credit-card" className="h-4 w-4 text-cyan-400" />
+          <ul className="mb-10 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground" role="list">
+            <li className="flex items-center gap-2">
+              <Icon icon="lucide:credit-card" className="h-4 w-4 text-cyan-400" aria-hidden="true" />
               <span>African payments</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Icon icon="lucide:share-2" className="h-4 w-4 text-purple-400" />
+            </li>
+            <li className="flex items-center gap-2">
+              <Icon icon="lucide:share-2" className="h-4 w-4 text-purple-400" aria-hidden="true" />
               <span>Viral referrals</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Icon icon="lucide:bot" className="h-4 w-4 text-pink-400" />
+            </li>
+            <li className="flex items-center gap-2">
+              <Icon icon="lucide:bot" className="h-4 w-4 text-pink-400" aria-hidden="true" />
               <span>AI writing</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Icon icon="lucide:trending-up" className="h-4 w-4 text-green-400" />
+            </li>
+            <li className="flex items-center gap-2">
+              <Icon icon="lucide:trending-up" className="h-4 w-4 text-green-400" aria-hidden="true" />
               <span>42%+ open rates</span>
-            </div>
-          </div>
+            </li>
+          </ul>
 
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link href="/register">
@@ -453,5 +458,6 @@ export default function HomePage() {
         </div>
       </footer>
     </div>
+    </>
   )
 }
