@@ -9,6 +9,7 @@ import (
 	"github.com/okemwag/newsletter/internal/handlers"
 	"github.com/okemwag/newsletter/internal/middleware"
 	"github.com/okemwag/newsletter/internal/models"
+	"github.com/okemwag/newsletter/internal/services"
 	"github.com/okemwag/newsletter/internal/types"
 	"github.com/okemwag/newsletter/internal/workers"
 )
@@ -44,6 +45,14 @@ func main() {
 		&models.ReferralReward{},
 		&models.ReferralLeaderboard{},
 		&models.ABTestVariant{},
+		// Creator onboarding models
+		&models.CreatorBalance{},
+		&models.CreatorPayout{},
+		&models.PayoutCap{},
+		&models.FraudFlag{},
+		&models.EmailVerification{},
+		&models.PhoneVerification{},
+		&models.CreatorEarning{},
 	)
 	if err != nil {
 		log.Fatalf("Failed to run migrations: %v", err)
@@ -56,6 +65,9 @@ func main() {
 
 	// Initialize Gin router
 	r := gin.Default()
+
+	// Apply CORS middleware (must be before other middleware)
+	r.Use(middleware.CORSMiddleware())
 
 	// Apply global rate limiting
 	r.Use(middleware.GlobalRateLimiter())
@@ -106,9 +118,29 @@ func main() {
 		auth.Use(middleware.RateLimiter(middleware.AuthRateLimit))
 		{
 			auth.POST("/signup", authHandler.Signup)
+			auth.POST("/register", authHandler.Signup) // Alias for frontend compatibility
 			auth.POST("/login", authHandler.Login)
 			auth.POST("/refresh", authHandler.Refresh)
 			auth.POST("/logout", middleware.AuthMiddleware(), authHandler.Logout)
+		}
+
+		// Onboarding routes (allows unverified users)
+		onboardingService := services.NewOnboardingService(db)
+		fraudService := services.NewFraudService(db)
+		onboardingHandler := handlers.NewOnboardingHandler(onboardingService, fraudService)
+		
+		onboarding := api.Group("/onboarding")
+		onboarding.Use(middleware.AuthMiddlewareAllowUnverified())
+		{
+			onboarding.POST("/verify-email", onboardingHandler.VerifyEmail)
+			onboarding.POST("/resend-verification", onboardingHandler.ResendVerification)
+			onboarding.PUT("/profile", onboardingHandler.SetupProfile)
+			onboarding.PUT("/pricing", onboardingHandler.SetPricing)
+			onboarding.PUT("/payout", onboardingHandler.SetupPayout)
+			onboarding.POST("/verify-payout", onboardingHandler.VerifyPayout)
+			onboarding.PUT("/kyc", onboardingHandler.SubmitKYC)
+			onboarding.POST("/activate", onboardingHandler.Activate)
+			onboarding.GET("/status", onboardingHandler.GetStatus)
 		}
 
 		// User routes (protected)

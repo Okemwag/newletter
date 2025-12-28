@@ -96,8 +96,11 @@ api.interceptors.response.use(
 export interface User {
     id: string
     email: string
-    name: string
+    firstName: string
+    lastName: string
     role: "admin" | "creator" | "subscriber"
+    emailVerified: boolean
+    creatorStatus?: "draft" | "pending" | "active" | "frozen"
     created_at: string
 }
 
@@ -109,7 +112,9 @@ export interface LoginRequest {
 export interface RegisterRequest {
     email: string
     password: string
-    name: string
+    firstName: string
+    lastName: string
+    country: string
 }
 
 export interface AuthResponse {
@@ -166,7 +171,7 @@ export const authApi = {
         api.post<AuthResponse>("/auth/login", data),
 
     register: (data: RegisterRequest) =>
-        api.post<AuthResponse>("/auth/register", data),
+        api.post<AuthResponse>("/auth/signup", data),
 
     logout: () =>
         api.post("/auth/logout"),

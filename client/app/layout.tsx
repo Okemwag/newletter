@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "sonner"
 import { GoogleAnalytics } from "@/components/analytics/google-analytics"
 import { GoogleTagManager } from "@/components/analytics/google-tag-manager"
+import { AuthProvider } from "@/contexts/auth-context"
 import "./globals.css"
 
 const inter = Inter({
@@ -155,9 +156,11 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         <GoogleTagManager />
-        {children}
-        <Toaster 
-          position="top-right" 
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+        <Toaster
+          position="top-right"
           theme="dark"
           richColors
           closeButton
@@ -175,3 +178,4 @@ export default function RootLayout({
     </html>
   )
 }
+

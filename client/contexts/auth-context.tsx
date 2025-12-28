@@ -79,7 +79,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setTokens(access_token, refresh_token)
             setUser(user)
 
-            router.push("/dashboard")
+            // Redirect to onboarding for email verification
+            router.push("/onboarding/verify-email")
         } catch (error) {
             throw error
         } finally {
@@ -128,14 +129,19 @@ export function useAuth() {
 
 // Protected route wrapper component
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-    const { isAuthenticated, isLoading } = useAuth()
+    const { user, isAuthenticated, isLoading } = useAuth()
     const router = useRouter()
 
     useEffect(() => {
-        if (!isLoading && !isAuthenticated) {
-            router.push("/login")
+        if (!isLoading) {
+            if (!isAuthenticated) {
+                router.push("/login")
+            } else if (user && !user.emailVerified) {
+                // Redirect unverified users to email verification
+                router.push("/onboarding/verify-email")
+            }
         }
-    }, [isAuthenticated, isLoading, router])
+    }, [isAuthenticated, isLoading, user, router])
 
     if (isLoading) {
         return (
@@ -145,7 +151,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
         )
     }
 
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user?.emailVerified) {
         return null
     }
 
