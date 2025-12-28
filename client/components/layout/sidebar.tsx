@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Send, Users, Zap, Settings, ChevronLeft, ChevronRight, LogOut } from "lucide-react"
+import { Icon } from "@iconify/react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -16,11 +16,14 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Campaigns", href: "/campaigns", icon: Send },
-  { name: "Subscribers", href: "/subscribers", icon: Users },
-  { name: "Automations", href: "/automations", icon: Zap },
-  { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Dashboard", href: "/dashboard", icon: "lucide:layout-dashboard" },
+  { name: "Campaigns", href: "/campaigns", icon: "lucide:send" },
+  { name: "Subscribers", href: "/subscribers", icon: "lucide:users" },
+  { name: "Analytics", href: "/analytics", icon: "lucide:bar-chart-3" },
+  { name: "Referrals", href: "/referrals", icon: "lucide:share-2" },
+  { name: "Automations", href: "/automations", icon: "lucide:zap" },
+  { name: "Billing", href: "/billing", icon: "lucide:credit-card" },
+  { name: "Settings", href: "/settings", icon: "lucide:settings" },
 ]
 
 export function Sidebar() {
@@ -55,7 +58,7 @@ export function Sidebar() {
           className={cn("h-8 w-8 text-muted-foreground hover:text-foreground", collapsed && "hidden")}
           onClick={() => setCollapsed(!collapsed)}
         >
-          <ChevronLeft className="h-4 w-4" />
+          <Icon icon="lucide:chevron-left" className="h-4 w-4" />
         </Button>
       </div>
 
@@ -75,7 +78,7 @@ export function Sidebar() {
                 collapsed && "justify-center px-2",
               )}
             >
-              <item.icon className={cn("h-5 w-5 flex-shrink-0", isActive && "text-terminal")} />
+              <Icon icon={item.icon} className={cn("h-5 w-5 flex-shrink-0", isActive && "text-terminal")} />
               {!collapsed && <span>{item.name}</span>}
             </Link>
           )
@@ -91,7 +94,7 @@ export function Sidebar() {
             className="w-full h-8 text-muted-foreground hover:text-foreground"
             onClick={() => setCollapsed(false)}
           >
-            <ChevronRight className="h-4 w-4" />
+            <Icon icon="lucide:chevron-right" className="h-4 w-4" />
           </Button>
         </div>
       )}
@@ -120,12 +123,12 @@ export function Sidebar() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4" />
+              <Icon icon="lucide:settings" className="mr-2 h-4 w-4" />
               Account Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-destructive">
-              <LogOut className="mr-2 h-4 w-4" />
+              <Icon icon="lucide:log-out" className="mr-2 h-4 w-4" />
               Sign Out
             </DropdownMenuItem>
           </DropdownMenuContent>
