@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: white;
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .content {
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        .reward-badge {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 16px 40px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-size: 18px;
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>You're Invited! 🎁</h1>
+        </div>
+        <div class="content">
+            <div class="avatar">{{.ReferrerInitial}}</div>
+            <h2>{{.ReferrerName}} thinks you'll love {{.NewsletterName}}</h2>
+            <p style="color: #666; font-size: 16px;">Join our community of subscribers and get exclusive content
+                delivered straight to your inbox.</p>
+            <div class="reward-badge">🎉 {{.RewardText}}</div>
+            <br>
+            <a href="{{.SignupURL}}" class="button">Accept Invitation</a>
+            <p style="color: #999; font-size: 12px; margin-top: 30px;">This invitation was sent by {{.ReferrerName}}
+                ({{.ReferrerEmail}})</p>
+        </div>
+        <div class="footer">
+            <p>Referral code: <strong>{{.ReferralCode}}</strong></p>
+        </div>
+    </div>
+</body>
+
+</html>

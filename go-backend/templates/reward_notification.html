@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: white;
+            margin: 0;
+            font-size: 48px;
+        }
+
+        .content {
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .amount {
+            font-size: 48px;
+            color: #667eea;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .badge {
+            background: #ffc107;
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 10px 0;
+        }
+
+        .leaderboard {
+            margin: 30px 0;
+        }
+
+        .rank {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎁</h1>
+        </div>
+        <div class="content">
+            <h2>Congratulations, {{.FirstName}}!</h2>
+            <p style="color: #666;">Your referral just converted! You've earned:</p>
+            <div class="amount">{{.Currency}} {{.RewardAmount}}</div>
+            <div class="badge">{{.BadgeText}}</div>
+            <div class="leaderboard">
+                <p class="rank">You're now ranked #{{.Rank}} 🏆</p>
+                <p style="color: #666;">{{.NextMilestoneText}}</p>
+            </div>
+            <a href="{{.DashboardURL}}" class="button">View Your Rewards</a>
+        </div>
+        <div class="footer">
+            <p>Keep sharing your referral link to earn more rewards!</p>
+        </div>
+    </div>
+</body>
+
+</html>
