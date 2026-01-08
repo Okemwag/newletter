@@ -416,7 +416,7 @@ func (s *ReferralService) recalculateViralMetrics(programID uuid.UUID) {
 	s.CalculateViralMetrics(programID)
 }
 
-func (s *ReferralService) updateLeaderboard(programID uuid.UUID, userID uuid.UUID, value *int64) {
+func (s *ReferralService) updateLeaderboard(programID uuid.UUID, userID uuid.UUID, _ *int64) {
 	// Find or create leaderboard entry
 	var entry models.ReferralLeaderboard
 	periodStart := time.Now().Truncate(24 * time.Hour).AddDate(0, 0, -int(time.Now().Weekday()))

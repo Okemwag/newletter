@@ -122,6 +122,7 @@ func main() {
 			auth.POST("/login", authHandler.Login)
 			auth.POST("/refresh", authHandler.Refresh)
 			auth.POST("/logout", middleware.AuthMiddleware(), authHandler.Logout)
+			auth.GET("/me", middleware.AuthMiddlewareAllowUnverified(), authHandler.Me)
 		}
 
 		// Onboarding routes (allows unverified users)

@@ -31,6 +31,19 @@ type Subscriber struct {
 	UnsubscribedAt   *time.Time       `gorm:"column:unsubscribed_at" json:"unsubscribedAt,omitempty"`
 	CreatedAt        time.Time        `gorm:"column:created_at;autoCreateTime" json:"createdAt"`
 	UpdatedAt        time.Time        `gorm:"column:updated_at;autoUpdateTime" json:"updatedAt"`
+
+	// Bounce tracking fields
+	BounceCount    int        `gorm:"column:bounce_count;default:0" json:"bounceCount"`
+	LastBounceAt   *time.Time `gorm:"column:last_bounce_at" json:"lastBounceAt,omitempty"`
+	BounceReason   *string    `gorm:"column:bounce_reason;size:500" json:"bounceReason,omitempty"`
+
+	// Engagement tracking fields
+	LastOpenedAt    *time.Time `gorm:"column:last_opened_at;index" json:"lastOpenedAt,omitempty"`
+	LastClickedAt   *time.Time `gorm:"column:last_clicked_at" json:"lastClickedAt,omitempty"`
+	EngagementScore float64    `gorm:"column:engagement_score;default:50" json:"engagementScore"` // 0-100 scale
+	EmailsSent      int        `gorm:"column:emails_sent;default:0" json:"emailsSent"`
+	EmailsOpened    int        `gorm:"column:emails_opened;default:0" json:"emailsOpened"`
+	EmailsClicked   int        `gorm:"column:emails_clicked;default:0" json:"emailsClicked"`
 }
 
 func (Subscriber) TableName() string {

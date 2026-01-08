@@ -202,7 +202,8 @@ func (s *PaystackService) VerifyPayment(reference string) (*models.Payment, erro
 	}
 
 	// Update payment status
-	if result.Data.Status == "success" {
+	switch result.Data.Status {
+case "success":
 		payment.Status = models.PaymentStatusSuccess
 		txnID := fmt.Sprintf("%d", result.Data.ID)
 		payment.ProviderTxnID = &txnID
@@ -212,7 +213,7 @@ func (s *PaystackService) VerifyPayment(reference string) (*models.Payment, erro
 		// Set expiry based on billing cycle
 		expiresAt := now.AddDate(0, 1, 0) // Default 1 month
 		payment.ExpiresAt = &expiresAt
-	} else if result.Data.Status == "failed" {
+	case "failed":
 		payment.Status = models.PaymentStatusFailed
 		payment.FailureReason = &result.Data.GatewayResponse
 	}

@@ -142,10 +142,11 @@ func (s *SubscriptionService) CreateSubscription(userID, creatorID, planID uuid.
 		existing.StartedAt = time.Now()
 		
 		// Calculate expiry
-		if billingCycle == models.BillingCycleYearly {
+		switch billingCycle {
+        case models.BillingCycleYearly:
 			expiresAt := time.Now().AddDate(1, 0, 0)
 			existing.ExpiresAt = &expiresAt
-		} else if billingCycle == models.BillingCycleMonthly {
+		case models.BillingCycleMonthly:
 			expiresAt := time.Now().AddDate(0, 1, 0)
 			existing.ExpiresAt = &expiresAt
 		}
