@@ -1,7 +1,14 @@
 package main
 
 import (
+	"context"
 	"log"
+	"log/slog"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/okemwag/newsletter/internal/config"
@@ -15,16 +22,25 @@ import (
 )
 
 func main() {
-	// Load configuration
 	config.Load()
 
-	// Connect to databases
+	// Structured logging level
+	setLogLevel(config.AppConfig.LogLevel)
+	if config.IsProduction() {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	database.Connect()
 	database.ConnectRedis()
 
-	// Auto-migrate models (use proper migrations in production)
+	// Run SQL migrations first (versioned schema)
+	if err := database.RunMigrations(); err != nil {
+		log.Fatalf("Failed to run migrations: %v", err)
+	}
+
+	// Auto-migrate for tables/columns not yet in SQL migrations (remove when 000002+ is complete)
 	db := database.GetDB()
-	err := db.AutoMigrate(
+	if err := db.AutoMigrate(
 		&models.User{},
 		&models.RefreshToken{},
 		&models.NewsletterContent{},
@@ -45,7 +61,6 @@ func main() {
 		&models.ReferralReward{},
 		&models.ReferralLeaderboard{},
 		&models.ABTestVariant{},
-		// Creator onboarding models
 		&models.CreatorBalance{},
 		&models.CreatorPayout{},
 		&models.PayoutCap{},
@@ -53,35 +68,46 @@ func main() {
 		&models.EmailVerification{},
 		&models.PhoneVerification{},
 		&models.CreatorEarning{},
-	)
-	if err != nil {
-		log.Fatalf("Failed to run migrations: %v", err)
+	); err != nil {
+		log.Fatalf("Failed to auto-migrate: %v", err)
 	}
 
-	// Start background worker
 	worker := workers.NewWorker()
 	worker.Start()
-	defer worker.Stop()
 
-	// Initialize Gin router
-	r := gin.Default()
-
-	// Apply CORS middleware (must be before other middleware)
+	r := gin.New()
+	r.Use(middleware.RequestID())
+	r.Use(middleware.Recovery())
+	r.Use(gin.Logger())
 	r.Use(middleware.CORSMiddleware())
-
-	// Apply global rate limiting
 	r.Use(middleware.GlobalRateLimiter())
 
-	// Health check
+	// Health: ping DB (and optionally Redis); return 503 if DB unhealthy
 	r.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{
+		if err := database.PingDB(); err != nil {
+			slog.Warn("health check: database ping failed", "error", err)
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"status":  "unhealthy",
+				"message": "database unavailable",
+				"db":      "down",
+				"redis":   database.IsRedisConnected(),
+			})
+			return
+		}
+		redisOK := database.IsRedisConnected()
+		if database.GetRedis() != nil {
+			if err := database.PingRedis(); err != nil {
+				redisOK = false
+			}
+		}
+		c.JSON(http.StatusOK, gin.H{
 			"status":  "ok",
 			"message": "Newsletter API is running",
-			"redis":   database.IsRedisConnected(),
+			"db":      "up",
+			"redis":   redisOK,
 		})
 	})
 
-	// Initialize handlers
 	authHandler := handlers.NewAuthHandler()
 	userHandler := handlers.NewUserHandler()
 	contentHandler := handlers.NewContentHandler()
@@ -95,41 +121,35 @@ func main() {
 	referralHandler := handlers.NewReferralHandler()
 	templateHandler := handlers.NewTemplateHandler()
 
-	// Public endpoints (no auth required)
 	r.GET("/api/unsubscribe/:token", subscriberHandler.Unsubscribe)
 	r.GET("/api/track/open/:campaignId/:subscriberId", analyticsHandler.TrackOpen)
 	r.GET("/api/track/click/:campaignId/:subscriberId", analyticsHandler.TrackClick)
 
-	// Payment webhooks (verified by signature)
 	r.POST("/api/webhooks/paystack", paymentHandler.PaystackWebhook)
 	r.POST("/api/webhooks/mpesa", paymentHandler.MpesaCallback)
 
-	// Public referral endpoints
 	r.GET("/api/r/:code", referralHandler.TrackClick)
 	r.GET("/api/referrals/code/:code", referralHandler.GetCode)
 	r.POST("/api/referrals/track", referralHandler.TrackEvent)
 	r.GET("/api/referrals/ab-test/select", referralHandler.SelectABVariant)
 
-	// API routes
 	api := r.Group("/api")
 	{
-		// Auth routes (with stricter rate limiting)
 		auth := api.Group("/auth")
 		auth.Use(middleware.RateLimiter(middleware.AuthRateLimit))
 		{
 			auth.POST("/signup", authHandler.Signup)
-			auth.POST("/register", authHandler.Signup) // Alias for frontend compatibility
+			auth.POST("/register", authHandler.Signup)
 			auth.POST("/login", authHandler.Login)
 			auth.POST("/refresh", authHandler.Refresh)
 			auth.POST("/logout", middleware.AuthMiddleware(), authHandler.Logout)
 			auth.GET("/me", middleware.AuthMiddlewareAllowUnverified(), authHandler.Me)
 		}
 
-		// Onboarding routes (allows unverified users)
 		onboardingService := services.NewOnboardingService(db)
 		fraudService := services.NewFraudService(db)
 		onboardingHandler := handlers.NewOnboardingHandler(onboardingService, fraudService)
-		
+
 		onboarding := api.Group("/onboarding")
 		onboarding.Use(middleware.AuthMiddlewareAllowUnverified())
 		{
@@ -144,7 +164,6 @@ func main() {
 			onboarding.GET("/status", onboardingHandler.GetStatus)
 		}
 
-		// User routes (protected)
 		users := api.Group("/users")
 		users.Use(middleware.AuthMiddleware())
 		{
@@ -154,7 +173,6 @@ func main() {
 			users.GET("", middleware.RoleMiddleware(types.UserRoleAdmin), userHandler.GetAllUsers)
 		}
 
-		// Content routes
 		content := api.Group("/content")
 		{
 			content.GET("/published", contentHandler.GetPublished)
@@ -171,7 +189,6 @@ func main() {
 			}
 		}
 
-		// Subscriber routes (protected)
 		subscribers := api.Group("/subscribers")
 		subscribers.Use(middleware.AuthMiddleware())
 		{
@@ -185,7 +202,6 @@ func main() {
 			subscribers.DELETE("/:id", subscriberHandler.Delete)
 		}
 
-		// Tag routes (protected)
 		tags := api.Group("/tags")
 		tags.Use(middleware.AuthMiddleware())
 		{
@@ -196,7 +212,6 @@ func main() {
 			tags.DELETE("/:id", tagHandler.Delete)
 		}
 
-		// Campaign routes (protected)
 		campaigns := api.Group("/campaigns")
 		campaigns.Use(middleware.AuthMiddleware())
 		{
@@ -210,7 +225,6 @@ func main() {
 			campaigns.GET("/:id/stats", campaignHandler.GetStats)
 		}
 
-		// Analytics routes (protected)
 		analytics := api.Group("/analytics")
 		analytics.Use(middleware.AuthMiddleware())
 		{
@@ -219,7 +233,6 @@ func main() {
 			analytics.GET("/top-campaigns", analyticsHandler.GetTopCampaigns)
 		}
 
-		// Subscription Plans (protected)
 		plans := api.Group("/plans")
 		plans.Use(middleware.AuthMiddleware())
 		{
@@ -230,7 +243,6 @@ func main() {
 			plans.DELETE("/:id", paymentHandler.DeletePlan)
 		}
 
-		// Payments (protected)
 		payments := api.Group("/payments")
 		payments.Use(middleware.AuthMiddleware())
 		{
@@ -241,7 +253,6 @@ func main() {
 			payments.GET("/mpesa/status/:checkoutId", paymentHandler.MpesaStatus)
 		}
 
-		// Subscriptions (protected)
 		subscriptions := api.Group("/subscriptions")
 		subscriptions.Use(middleware.AuthMiddleware())
 		{
@@ -250,7 +261,6 @@ func main() {
 			subscriptions.GET("/revenue", paymentHandler.GetRevenue)
 		}
 
-		// Webhooks (protected)
 		webhooks := api.Group("/webhooks")
 		webhooks.Use(middleware.AuthMiddleware())
 		{
@@ -263,7 +273,6 @@ func main() {
 			webhooks.GET("/:id/logs", webhookHandler.GetLogs)
 		}
 
-		// Referral routes (protected)
 		referrals := api.Group("/referrals")
 		referrals.Use(middleware.AuthMiddleware())
 		{
@@ -279,7 +288,6 @@ func main() {
 			referrals.GET("/ab-test", referralHandler.GetABVariants)
 		}
 
-		// Email Templates (protected)
 		templates := api.Group("/templates")
 		templates.Use(middleware.AuthMiddleware())
 		{
@@ -295,7 +303,6 @@ func main() {
 			templates.GET("/:id/preview", templateHandler.Preview)
 		}
 
-		// Admin routes (admin only)
 		admin := api.Group("/admin")
 		admin.Use(middleware.AuthMiddleware(), middleware.RoleMiddleware(types.UserRoleAdmin))
 		{
@@ -310,10 +317,50 @@ func main() {
 		}
 	}
 
-	// Start server
 	port := config.AppConfig.ServerPort
-	log.Printf("Server starting on port %s", port)
-	if err := r.Run(":" + port); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+	srv := &http.Server{
+		Addr:         ":" + port,
+		Handler:      r,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
 	}
+
+	go func() {
+		slog.Info("Server starting", "port", port)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Server failed: %v", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	slog.Info("Shutting down server...")
+	worker.Stop()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
+	}
+
+	slog.Info("Server stopped")
+}
+
+func setLogLevel(level string) {
+	var l slog.Level
+	switch level {
+	case "debug":
+		l = slog.LevelDebug
+	case "warn":
+		l = slog.LevelWarn
+	case "error":
+		l = slog.LevelError
+	default:
+		l = slog.LevelInfo
+	}
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: l})))
 }

@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -43,6 +44,14 @@ func GetRedis() *redis.Client {
 
 func IsRedisConnected() bool {
 	return Redis != nil
+}
+
+// PingRedis returns nil if Redis is reachable
+func PingRedis() error {
+	if Redis == nil {
+		return fmt.Errorf("redis not connected")
+	}
+	return Redis.Ping(ctx).Err()
 }
 
 // Cache helpers

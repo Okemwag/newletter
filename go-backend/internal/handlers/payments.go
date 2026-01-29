@@ -246,7 +246,13 @@ func (h *PaymentHandler) MpesaStatus(c *gin.Context) {
 }
 
 // POST /api/webhooks/mpesa
+// When MPESA_CALLBACK_SECRET is set, request must include X-Mpesa-Callback-Secret header.
 func (h *PaymentHandler) MpesaCallback(c *gin.Context) {
+	if !h.mpesaService.ValidateCallbackSecret(c.GetHeader("X-Mpesa-Callback-Secret")) {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+
 	var callback services.MpesaCallbackBody
 
 	if err := c.ShouldBindJSON(&callback); err != nil {

@@ -18,14 +18,15 @@ import (
 )
 
 type MpesaService struct {
-	db              *gorm.DB
-	consumerKey     string
-	consumerSecret  string
-	shortcode       string
-	passkey         string
-	callbackURL     string
-	baseURL         string
-	environment     string // sandbox or production
+	db               *gorm.DB
+	consumerKey      string
+	consumerSecret   string
+	shortcode        string
+	passkey          string
+	callbackURL      string
+	callbackSecret   string // optional: require X-Mpesa-Callback-Secret header to match
+	baseURL          string
+	environment      string // sandbox or production
 }
 
 func NewMpesaService() *MpesaService {
@@ -40,15 +41,26 @@ func NewMpesaService() *MpesaService {
 	}
 
 	return &MpesaService{
-		db:             database.GetDB(),
-		consumerKey:    os.Getenv("MPESA_CONSUMER_KEY"),
-		consumerSecret: os.Getenv("MPESA_CONSUMER_SECRET"),
-		shortcode:      os.Getenv("MPESA_SHORTCODE"),
-		passkey:        os.Getenv("MPESA_PASSKEY"),
-		callbackURL:    os.Getenv("MPESA_CALLBACK_URL"),
-		baseURL:        baseURL,
-		environment:    env,
+		db:              database.GetDB(),
+		consumerKey:     os.Getenv("MPESA_CONSUMER_KEY"),
+		consumerSecret:  os.Getenv("MPESA_CONSUMER_SECRET"),
+		shortcode:       os.Getenv("MPESA_SHORTCODE"),
+		passkey:         os.Getenv("MPESA_PASSKEY"),
+		callbackURL:     os.Getenv("MPESA_CALLBACK_URL"),
+		callbackSecret:  os.Getenv("MPESA_CALLBACK_SECRET"),
+		baseURL:         baseURL,
+		environment:     env,
 	}
+}
+
+// ValidateCallbackSecret returns true if callback is authorized.
+// If MPESA_CALLBACK_SECRET is set, the request must include X-Mpesa-Callback-Secret header matching it.
+// If MPESA_CALLBACK_SECRET is empty, all callbacks are accepted (configure secret in production).
+func (s *MpesaService) ValidateCallbackSecret(headerSecret string) bool {
+	if s.callbackSecret == "" {
+		return true
+	}
+	return headerSecret != "" && headerSecret == s.callbackSecret
 }
 
 type STKPushRequest struct {

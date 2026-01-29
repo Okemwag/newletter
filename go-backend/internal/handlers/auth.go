@@ -53,9 +53,11 @@ func (h *AuthHandler) Login(c *gin.Context) {
 }
 
 // POST /api/auth/refresh
+// Accepts refresh_token (snake_case) or refreshToken (camelCase). Returns access_token, refresh_token for client compatibility.
 func (h *AuthHandler) Refresh(c *gin.Context) {
 	var req struct {
-		RefreshToken string `json:"refreshToken" binding:"required"`
+		RefreshToken  string `json:"refresh_token"`
+		RefreshToken2 string `json:"refreshToken"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -63,13 +65,27 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 		return
 	}
 
-	tokens, err := h.authService.RefreshTokens(req.RefreshToken)
+	token := req.RefreshToken
+	if token == "" {
+		token = req.RefreshToken2
+	}
+	if token == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "refresh_token or refreshToken required"})
+		return
+	}
+
+	tokens, err := h.authService.RefreshTokens(token)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, tokens)
+	// Return snake_case for client compatibility (e.g. frontend expects access_token, refresh_token)
+	c.JSON(http.StatusOK, gin.H{
+		"access_token":  tokens.AccessToken,
+		"refresh_token": tokens.RefreshToken,
+		"expires_in":    tokens.ExpiresIn,
+	})
 }
 
 // POST /api/auth/logout
