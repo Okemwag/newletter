@@ -17,10 +17,6 @@ const nextConfig = {
   trailingSlash: false,
   // Strict mode for better performance
   reactStrictMode: true,
-  // Optimize fonts
-  optimizeFonts: true,
-  // Enable SWC minification
-  swcMinify: true,
   // Headers for security and SEO
   async headers() {
     return [

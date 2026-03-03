@@ -39,7 +39,7 @@ A production-ready newsletter platform backend built with Go (Gin + GORM) featur
 ```bash
 # Clone the repository
 git clone https://github.com/okemwag/newsletter.git
-cd newsletter/go-backend
+cd newsletter/backend
 
 # Install dependencies
 go mod download
@@ -122,7 +122,7 @@ MPESA_CONSUMER_SECRET=your-secret
 ## 🏗️ Project Structure
 
 ```
-go-backend/
+backend/
 ├── cmd/
 │   └── server/
 │       └── main.go          # Application entry point

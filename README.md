@@ -6,7 +6,7 @@ A full-stack newsletter platform with a Go backend and client frontend, featurin
 
 ```
 newsletter/
-├── go-backend/          # Go API server
+├── backend/             # Go API server
 │   ├── cmd/server/      # Application entry point
 │   ├── internal/        # Private application code
 │   ├── pkg/utils/       # Shared utilities
@@ -51,7 +51,7 @@ docker-compose up -d
 
 #### Backend
 ```bash
-cd go-backend
+cd backend
 cp .env.example .env
 go mod download
 go run cmd/server/main.go
@@ -60,8 +60,8 @@ go run cmd/server/main.go
 #### Frontend
 ```bash
 cd client
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 ## 📚 API Endpoints
@@ -77,7 +77,7 @@ npm run dev
 
 ## 🔧 Environment Variables
 
-See `go-backend/.env.example` for all configuration options.
+See `backend/.env.example` for all configuration options.
 
 ## 🤝 Contributing
 

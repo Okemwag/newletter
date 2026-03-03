@@ -4,27 +4,31 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { GlowCard } from "@/components/ui/glow-card"
 import { AuthLayout } from "@/components/layout/auth-layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { TerminalText } from "@/components/ui/terminal-text"
+import { useAuth } from "@/contexts/auth-context"
 import { Loader2, Mail, Lock, ArrowRight } from "lucide-react"
 
 export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const router = useRouter()
+  const [error, setError] = useState("")
+  const { login, isLoading } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    router.push("/dashboard")
+    setError("")
+
+    try {
+      await login({ email, password })
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } } }
+      setError(axiosErr.response?.data?.error || "Failed to sign in. Please try again.")
+    }
   }
 
   return (
@@ -44,6 +48,13 @@ export default function LoginPage() {
             <TerminalText>{">"}</TerminalText> Sign in to continue to Pulse
           </p>
         </div>
+
+        {/* Error */}
+        {error && (
+          <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-center text-sm text-red-400">
+            {error}
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">

@@ -1,6 +1,9 @@
 package utils
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -14,4 +17,10 @@ func HashPassword(password string) (string, error) {
 func VerifyPassword(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
+}
+
+// HashToken produces a fixed-length digest suitable for storing opaque tokens.
+func HashToken(token string) string {
+	sum := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(sum[:])
 }

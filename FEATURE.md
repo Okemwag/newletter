@@ -267,4 +267,4 @@
 
 ## Next Up: UI Enhancement 🎨
 
-The client folder exists with a Next.js setup. We'll enhance the UI to integrate with the go-backend.
+The client folder exists with a Next.js setup. We'll enhance the UI to integrate with the backend.

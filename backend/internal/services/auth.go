@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -109,7 +110,7 @@ func (s *AuthService) Register(req *SignupRequest) (*AuthResponse, error) {
 
 	// Store refresh token
 	if err := s.storeRefreshToken(user.ID, tokens.RefreshToken); err != nil {
-		return nil, errors.New("failed to store refresh token")
+		return nil, fmt.Errorf("failed to store refresh token: %w", err)
 	}
 
 	return &AuthResponse{
@@ -151,12 +152,14 @@ func (s *AuthService) Login(req *LoginRequest) (*AuthResponse, error) {
 
 	// Store refresh token
 	if err := s.storeRefreshToken(user.ID, tokens.RefreshToken); err != nil {
-		return nil, errors.New("failed to store refresh token")
+		return nil, fmt.Errorf("failed to store refresh token: %w", err)
 	}
 
 	return &AuthResponse{
-		User:   &user,
-		Tokens: tokens,
+		User:         &user,
+		Tokens:       tokens,
+		AccessToken:  tokens.AccessToken,
+		RefreshToken: tokens.RefreshToken,
 	}, nil
 }
 
@@ -171,6 +174,10 @@ func (s *AuthService) RefreshTokens(refreshToken string) (*utils.TokenPair, erro
 	var storedToken models.RefreshToken
 	result := s.db.Where("user_id = ?", claims.UserID).First(&storedToken)
 	if result.Error != nil {
+		return nil, errors.New("invalid refresh token")
+	}
+
+	if storedToken.TokenHash != utils.HashToken(refreshToken) {
 		return nil, errors.New("invalid refresh token")
 	}
 
@@ -194,7 +201,7 @@ func (s *AuthService) RefreshTokens(refreshToken string) (*utils.TokenPair, erro
 
 	// Store new refresh token
 	if err := s.storeRefreshToken(user.ID, tokens.RefreshToken); err != nil {
-		return nil, errors.New("failed to store refresh token")
+		return nil, fmt.Errorf("failed to store refresh token: %w", err)
 	}
 
 	return tokens, nil
@@ -223,10 +230,7 @@ func (s *AuthService) storeRefreshToken(userID uuid.UUID, token string) error {
 	s.db.Where("user_id = ?", userID).Delete(&models.RefreshToken{})
 
 	// Hash the token
-	tokenHash, err := utils.HashPassword(token)
-	if err != nil {
-		return err
-	}
+	tokenHash := utils.HashToken(token)
 
 	// Calculate expiry
 	expiresAt := time.Now().AddDate(0, 0, config.AppConfig.JWTRefreshExpirationDays)

@@ -31,7 +31,7 @@ This document summarizes the current state of the Go backend and what is require
   - Response: return a map or a response struct that serializes as `access_token` and `refresh_token` (e.g. `json:"access_token"` / `json:"refresh_token"`).
 - **Option B:** Change the client to send `refreshToken` and read `accessToken`/`refreshToken` from the response.
 
-**Files:** `go-backend/internal/handlers/auth.go`, `go-backend/pkg/utils/jwt.go` (TokenPair json tags) or client `client/lib/api.ts`.
+**Files:** `backend/internal/handlers/auth.go`, `backend/pkg/utils/jwt.go` (TokenPair json tags) or client `client/lib/api.ts`.
 
 ---
 
@@ -137,15 +137,15 @@ AutoMigrate in production is risky (no rollback, no controlled change history, p
 
 - `JWT_SECRET` defaults to `"default-secret-key"` (see §1.2).
 - `DB_PASSWORD` defaults to `"password"`.
-- No `.env.example` in `go-backend` (only `.env`, which should be gitignored).
+- No `.env.example` in `backend` (only `.env`, which should be gitignored).
 
 **Fix:**
 
 - No default for `JWT_SECRET` in production; fail fast if missing or weak.
 - No default for `DB_PASSWORD` in production (or document that default is dev-only).
-- Add `go-backend/.env.example` listing every required and optional variable with safe placeholders and comments.
+- Add `backend/.env.example` listing every required and optional variable with safe placeholders and comments.
 
-**Files:** `internal/config/config.go`, new `go-backend/.env.example`.
+**Files:** `internal/config/config.go`, new `backend/.env.example`.
 
 ---
 
@@ -210,15 +210,15 @@ AutoMigrate in production is risky (no rollback, no controlled change history, p
 
 ### 3.5 .env.example
 
-**Current:** No `.env.example` in `go-backend`.
+**Current:** No `.env.example` in `backend`.
 
-**Fix:** Add `go-backend/.env.example` with:
+**Fix:** Add `backend/.env.example` with:
 
 - All required variables (e.g. `DB_*`, `JWT_SECRET`, `SERVER_PORT`).
 - Optional ones (e.g. `REDIS_URL`, `CORS_ALLOWED_ORIGINS`, `PAYSTACK_*`, M-Pesa vars, `LOG_LEVEL`, `APP_ENV`).
 - Placeholder values and short comments. Do not put real secrets.
 
-**File:** New `go-backend/.env.example`.
+**File:** New `backend/.env.example`.
 
 ---
 

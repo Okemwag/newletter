@@ -1,22 +1,11 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
-import { Inter, JetBrains_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "sonner"
 import { GoogleAnalytics } from "@/components/analytics/google-analytics"
 import { GoogleTagManager } from "@/components/analytics/google-tag-manager"
 import { AuthProvider } from "@/contexts/auth-context"
 import "./globals.css"
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-})
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains",
-})
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://pulse.app'),
@@ -154,7 +143,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
+      <body className="font-sans antialiased">
         <GoogleTagManager />
         <AuthProvider>
           {children}
@@ -178,4 +167,3 @@ export default function RootLayout({
     </html>
   )
 }
-
